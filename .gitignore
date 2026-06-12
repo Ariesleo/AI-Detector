@@ -1,0 +1,9 @@
+# OS
+.DS_Store
+
+# editors
+.idea/
+.vscode/
+
+# stray local artifacts
+*.log

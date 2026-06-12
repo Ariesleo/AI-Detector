@@ -1,0 +1,14 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+pillow>=10.0
+numpy>=1.26
+pydantic>=2.7
+pydantic-settings>=2.3
+anthropic>=0.40
+# Persistent cache + auth + history. Degrades to in-memory if env vars absent.
+supabase>=2.0
+# Optional — official Content Authenticity SDK; code targets the 0.32 Reader API.
+c2pa-python>=0.32,<0.33 ; python_version >= "3.10"
+pytest>=8.0
+httpx>=0.27

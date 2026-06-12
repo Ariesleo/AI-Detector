@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Veritas",
+    "slug": "ai-content-detection",
+    "version": "0.1.0",
+    "scheme": "veritas",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.murarigupta.veritas"
+    },
+    "android": {
+      "package": "com.murarigupta.veritas",
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow access to analyze images from your library.",
+          "cameraPermission": "Allow camera access to analyze photos you take."
+        }
+      ]
+    ]
+  }
+}
