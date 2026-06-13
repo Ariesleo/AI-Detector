@@ -20,9 +20,24 @@ FastAPI service implementing the layered evidence pipeline from `../ARCHITECTURE
 | Supabase | `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` | In-memory report cache; `/v1/history` → 501 |
 | Upstash Redis | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | In-process rate limiting (resets on restart) |
 
-Setup: copy `.env.example` → `.env`, fill what you have. For Supabase, run
-`supabase_schema.sql` once in the dashboard's SQL editor. `GET /healthz`
+Setup: copy `.env.example` → `.env`, fill what you have. `GET /healthz`
 shows which services are live.
+
+## Migrations
+
+Schema lives in `migrations/*.sql`, applied in filename order and tracked
+in `public.schema_migrations` (each file runs exactly once):
+
+```bash
+scripts/migrate.sh --status    # applied vs pending
+scripts/migrate.sh             # apply pending (single transaction each)
+scripts/migrate.sh --baseline  # mark all applied WITHOUT running
+                               # (one-time, if you previously ran SQL by hand)
+```
+
+Needs `SUPABASE_DB_URL` in `.env` (Dashboard → Connect → Session pooler URI)
+and `psql` (`brew install libpq`). New schema change = new `NNNN_name.sql`
+file — never edit an applied migration.
 
 ## Cost & abuse controls (ARCHITECTURE.md §5)
 

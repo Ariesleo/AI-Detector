@@ -1,7 +1,7 @@
 """Report persistence + user history.
 
-Supabase Postgres when SUPABASE_URL/SUPABASE_SERVICE_KEY are set (see
-supabase_schema.sql), in-memory dicts otherwise. The in-memory layer always
+Supabase Postgres when SUPABASE_URL/SUPABASE_SERVICE_KEY are set (schema
+in migrations/, applied via scripts/migrate.sh), in-memory dicts otherwise. The in-memory layer always
 fronts Supabase as a per-process hot cache, so repeat hits never leave the box.
 
 Supabase failures are swallowed (logged to the layer note pattern is overkill
