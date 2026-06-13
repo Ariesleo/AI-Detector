@@ -109,7 +109,7 @@ export function Login() {
         </button>
       </motion.div>
       <p className="mt-6 text-center text-xs text-faint">
-        No account needed to scan — sign in only adds history and higher limits.
+        Create a free account to start verifying content. It takes a few seconds.
       </p>
     </div>
   );

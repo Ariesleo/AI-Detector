@@ -61,7 +61,14 @@ function AnimatedRoutes() {
             <div className="flex-1">
               <Routes location={location}>
                 <Route path="/" element={<Home />} />
-                <Route path="/detect" element={<Detect />} />
+                <Route
+                  path="/detect"
+                  element={
+                    <RequireAuth>
+                      <Detect />
+                    </RequireAuth>
+                  }
+                />
                 <Route path="/how-it-works" element={<HowItWorks />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/pricing" element={<Pricing />} />

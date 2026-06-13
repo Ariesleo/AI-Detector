@@ -7,7 +7,7 @@ const FREE = [
   "Full evidence pipeline — provenance, metadata, forensics, AI vision",
   "Verdict and confidence score",
   "Plain English explanation for every scan",
-  "No account needed",
+  "Free account — no card required",
 ];
 
 const PRO = [

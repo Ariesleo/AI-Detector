@@ -111,7 +111,7 @@ export function Home() {
         </Reveal>
         <Reveal delay={0.5}>
           <GlowLink to="/detect" className="mt-10">
-            Try it free — no account needed
+            Try it free — create your account
           </GlowLink>
         </Reveal>
         <Reveal delay={0.62}>
@@ -268,7 +268,7 @@ export function Home() {
           </h2>
         </Reveal>
         <Reveal delay={0.28}>
-          <p className="mt-4 text-mist">Free to use. No account required. Results in seconds.</p>
+          <p className="mt-4 text-mist">Free to start. Sign up once. Results in seconds.</p>
         </Reveal>
         <Reveal delay={0.4}>
           <GlowLink to="/detect" className="mt-8">
