@@ -33,6 +33,7 @@ export interface HistoryEntry {
   verdict: AnalysisReport["verdict"];
   confidence: number;
   created_at: string;
+  thumb_url?: string | null;
 }
 
 export async function fetchHistory(): Promise<HistoryEntry[]> {

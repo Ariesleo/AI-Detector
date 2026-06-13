@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { GlowButton } from "../components/GlowButton";
 import { authEnabled, supabase } from "../lib/supabase";
 
@@ -8,6 +8,8 @@ type Mode = "signin" | "signup";
 
 export function Login() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const next = params.get("next") || "/detect";
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,12 +39,12 @@ export function Login() {
       if (mode === "signup") {
         const { data, error: err } = await supabase.auth.signUp({ email, password });
         if (err) throw err;
-        if (data.session) navigate("/detect");
+        if (data.session) navigate(next);
         else setNotice("Check your email to confirm your account, then sign in.");
       } else {
         const { error: err } = await supabase.auth.signInWithPassword({ email, password });
         if (err) throw err;
-        navigate("/detect");
+        navigate(next);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));

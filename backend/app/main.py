@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import hashlib
 
-from fastapi import FastAPI, File, Header, HTTPException, Request, UploadFile
+from fastapi import BackgroundTasks, FastAPI, File, Header, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import auth, ratelimit, store
@@ -66,6 +66,7 @@ def healthz() -> dict:
 @app.post("/v1/analyze", response_model=AnalysisReport)
 async def analyze(
     request: Request,
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     authorization: str | None = Header(default=None),
     x_workspace_id: str | None = Header(default=None, alias="X-Workspace-Id"),
@@ -81,11 +82,15 @@ async def analyze(
     user_id = auth.resolve_user_id(authorization)
     workspace = _resolve_workspace(user_id, x_workspace_id)
 
+    is_image = (file.content_type or "").startswith("image/")
+
     # Cache hit costs us nothing — serve it before burning quota.
     sha = hashlib.sha256(data).hexdigest()
     if cached := store.get_by_hash(sha):
         if workspace and user_id:
             store.record_history(workspace["id"], user_id, cached)
+            if is_image:
+                background_tasks.add_task(store.save_thumbnail, workspace["id"], cached.report_id, data)
         return cached.model_copy(update={"cached": True})
 
     allowed, remaining = ratelimit.check_quota(_client_ip(request), workspace)
@@ -108,6 +113,8 @@ async def analyze(
     if workspace and user_id:
         store.record_history(workspace["id"], user_id, report)
         store.record_usage(workspace["id"], user_id, report.engine, use_llm)
+        if is_image:
+            background_tasks.add_task(store.save_thumbnail, workspace["id"], report.report_id, data)
     return report
 
 

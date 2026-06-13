@@ -9,12 +9,17 @@ here) — a broken DB must never take down analysis.
 """
 from __future__ import annotations
 
+import io
 import logging
 
 from .config import settings
 from .models import AnalysisReport
 
 logger = logging.getLogger(__name__)
+
+THUMB_BUCKET = "scan-thumbnails"
+THUMB_MAX_DIM = 320
+THUMB_SIGN_TTL = 3600  # seconds
 
 _memory_by_hash: dict[str, AnalysisReport] = {}
 _memory_by_id: dict[str, AnalysisReport] = {}
@@ -125,7 +130,7 @@ def get_history(workspace_id: str, limit: int = 50) -> list[dict]:
     if sb is None:
         return []
     try:
-        return (
+        rows = (
             sb.table("history")
             .select("report_id, sha256, verdict, confidence, created_at")
             .eq("workspace_id", workspace_id)
@@ -137,6 +142,59 @@ def get_history(workspace_id: str, limit: int = 50) -> list[dict]:
     except Exception as exc:
         logger.warning("Supabase get_history failed: %s", exc)
         return []
+
+    # Attach short-lived signed thumbnail URLs (signed-in opt-in storage).
+    if rows:
+        paths = [f"{workspace_id}/{r['report_id']}.jpg" for r in rows]
+        signed = _signed_thumbnails(sb, paths)
+        for r in rows:
+            r["thumb_url"] = signed.get(f"{workspace_id}/{r['report_id']}.jpg")
+    return rows
+
+
+# ---------- thumbnails (opt-in, signed-in users only) ----------
+
+def save_thumbnail(workspace_id: str, report_id: str, image_bytes: bytes) -> None:
+    """Downscale + store a private thumbnail at {workspace_id}/{report_id}.jpg.
+
+    Best-effort and image-only: failures (non-image upload, storage outage)
+    are logged, never raised — history works without the picture.
+    """
+    sb = _supabase()
+    if sb is None:
+        return
+    try:
+        from PIL import Image
+
+        img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        img.thumbnail((THUMB_MAX_DIM, THUMB_MAX_DIM), Image.LANCZOS)
+        buf = io.BytesIO()
+        img.save(buf, "JPEG", quality=80)
+        sb.storage.from_(THUMB_BUCKET).upload(
+            f"{workspace_id}/{report_id}.jpg",
+            buf.getvalue(),
+            {"content-type": "image/jpeg", "upsert": "true"},
+        )
+    except Exception as exc:
+        logger.info("thumbnail save skipped: %s", exc)
+
+
+def _signed_thumbnails(sb, paths: list[str]) -> dict[str, str]:
+    """Batch signed URLs; missing objects simply map to nothing."""
+    try:
+        results = sb.storage.from_(THUMB_BUCKET).create_signed_urls(paths, THUMB_SIGN_TTL)
+    except Exception as exc:
+        logger.info("signed thumbnail urls failed: %s", exc)
+        return {}
+    out: dict[str, str] = {}
+    for item in results or []:
+        if item.get("error"):
+            continue
+        url = item.get("signedURL") or item.get("signedUrl")
+        path = item.get("path")
+        if url and path:
+            out[path] = url
+    return out
 
 
 # ---------- workspaces (docs/TENANCY.md) ----------

@@ -6,6 +6,7 @@ import { Aurora } from "./components/Aurora";
 import { Footer } from "./components/Footer";
 import { NavBar } from "./components/NavBar";
 import { Particles } from "./components/Particles";
+import { RequireAuth } from "./components/RequireAuth";
 import { About } from "./pages/About";
 import { Detect } from "./pages/Detect";
 import { History } from "./pages/History";
@@ -56,17 +57,26 @@ function AnimatedRoutes() {
               transition={{ duration: 0.45, ease: [0.6, 0.05, 0.4, 1] }}
             />
           )}
-          <main className="relative min-h-screen pt-20">
-            <Routes location={location}>
-              <Route path="/" element={<Home />} />
-              <Route path="/detect" element={<Detect />} />
-              <Route path="/how-it-works" element={<HowItWorks />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/history" element={<History />} />
-              <Route path="*" element={<Home />} />
-            </Routes>
+          <main className="relative flex min-h-screen flex-col pt-20">
+            <div className="flex-1">
+              <Routes location={location}>
+                <Route path="/" element={<Home />} />
+                <Route path="/detect" element={<Detect />} />
+                <Route path="/how-it-works" element={<HowItWorks />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/login" element={<Login />} />
+                <Route
+                  path="/history"
+                  element={
+                    <RequireAuth>
+                      <History />
+                    </RequireAuth>
+                  }
+                />
+                <Route path="*" element={<Home />} />
+              </Routes>
+            </div>
             <Footer />
           </main>
         </motion.div>

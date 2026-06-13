@@ -5,6 +5,7 @@ import { Reveal } from "../components/Reveal";
 import { fetchHistory, type HistoryEntry } from "../lib/api";
 import { useSession } from "../lib/useSession";
 import { authEnabled } from "../lib/supabase";
+import { ImageIcon } from "../components/icons";
 import { KIND_META, VERDICT_KIND, VERDICT_LABEL } from "../lib/verdict";
 
 export function History() {
@@ -66,8 +67,23 @@ export function History() {
           const meta = KIND_META[kind];
           return (
             <Reveal key={`${e.report_id}-${i}`} delay={Math.min(i * 0.06, 0.4)}>
-              <div className="glass flex items-center justify-between gap-4 rounded-2xl px-5 py-4">
-                <div className="min-w-0">
+              <div className="glass flex items-center gap-4 rounded-2xl px-4 py-4">
+                <div
+                  className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/8 bg-white/[0.03]"
+                  style={{ boxShadow: `inset 0 0 20px ${meta.color}14` }}
+                >
+                  {e.thumb_url ? (
+                    <img
+                      src={e.thumb_url}
+                      alt="Scanned content"
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <ImageIcon size={20} className="text-faint" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
                   <span
                     className="inline-block rounded-full border px-3 py-1 text-xs font-medium"
                     style={{
