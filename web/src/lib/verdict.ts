@@ -39,6 +39,12 @@ export const KIND_META: Record<VerdictKind, KindMeta> = {
   },
 };
 
+export const ENGINE_LABEL: Record<"claude" | "gemini" | "rules", string> = {
+  claude: "Claude",
+  gemini: "Gemini",
+  rules: "deterministic rules",
+};
+
 export const DIRECTION_META = {
   ai: { color: "#FF2D55", arrow: "▲", label: "AI" },
   authentic: { color: "#00FF88", arrow: "▼", label: "Authentic" },

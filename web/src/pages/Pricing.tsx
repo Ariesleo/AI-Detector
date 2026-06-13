@@ -4,17 +4,17 @@ import { Reveal } from "../components/Reveal";
 
 const FREE = [
   "10 scans per day",
-  "HuggingFace detection",
+  "Full evidence pipeline — provenance, metadata, forensics, AI vision",
   "Verdict and confidence score",
-  "All content types",
+  "Plain English explanation for every scan",
   "No account needed",
 ];
 
 const PRO = [
   "Unlimited scans",
-  "HuggingFace + Hive Moderation simultaneously",
+  "Multi-provider detection (HuggingFace + Hive) — coming",
   "Side-by-side provider comparison",
-  "Plain English AI explanation for every scan",
+  "Priority engine (Claude) on every scan",
   "Full scan history",
   "API access for developers",
   "Priority support",

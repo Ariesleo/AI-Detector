@@ -3,6 +3,20 @@ import type { AnalysisReport } from "./types";
 export const API_URL: string =
   (import.meta.env.VITE_API_URL as string | undefined) ?? "http://127.0.0.1:8000";
 
+export interface Health {
+  ok: boolean;
+  claude_enabled: boolean;
+  gemini_enabled: boolean;
+  supabase_enabled: boolean;
+  upstash_enabled: boolean;
+}
+
+export async function fetchHealth(): Promise<Health> {
+  const res = await fetch(`${API_URL}/healthz`);
+  if (!res.ok) throw new Error(`healthz ${res.status}`);
+  return (await res.json()) as Health;
+}
+
 export async function analyzeFile(file: File): Promise<AnalysisReport> {
   const form = new FormData();
   form.append("file", file, file.name);

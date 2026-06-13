@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import type { AnalysisReport } from "../../lib/types";
 import {
   DIRECTION_META,
+  ENGINE_LABEL,
   KIND_META,
   VERDICT_KIND,
   VERDICT_LABEL,
@@ -36,6 +37,9 @@ export function VerdictPanel({ report }: { report: AnalysisReport }) {
   const pct = Math.round(report.confidence * 100);
   const typed = useTypewriter(report.summary);
   const [showRaw, setShowRaw] = useState(false);
+  const visionRaw = report.layers.vision?.raw as { provider?: unknown } | undefined;
+  const visionProvider =
+    typeof visionRaw?.provider === "string" ? visionRaw.provider : null;
 
   return (
     <div className="mx-auto mt-10 max-w-xl">
@@ -124,6 +128,9 @@ export function VerdictPanel({ report }: { report: AnalysisReport }) {
       >
         <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-teal-200/70">
           What this means for you
+          <span className="ml-2 normal-case tracking-normal text-faint">
+            · verdict by {ENGINE_LABEL[report.engine]}
+          </span>
         </p>
         <p className="mt-3 min-h-16 leading-relaxed text-ink/90">
           {typed}
@@ -160,7 +167,9 @@ export function VerdictPanel({ report }: { report: AnalysisReport }) {
           </div>
         )}
         <p className="mt-5 font-mono text-[10px] text-faint">
-          engine: {report.engine} · sha256: {report.sha256.slice(0, 16)}…
+          engine: {report.engine}
+          {visionProvider ? ` · vision: ${visionProvider}` : ""} · sha256:{" "}
+          {report.sha256.slice(0, 16)}…
         </p>
       </motion.div>
 

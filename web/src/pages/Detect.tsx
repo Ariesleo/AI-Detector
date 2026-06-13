@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 import { GlowButton } from "../components/GlowButton";
 import { DocIcon, VideoIcon, WaveIcon } from "../components/icons";
+import { EngineStatus } from "../components/detect/EngineStatus";
 import { ScanTheater } from "../components/detect/ScanTheater";
 import { UploadZone } from "../components/detect/UploadZone";
 import { VerdictPanel } from "../components/detect/VerdictPanel";
@@ -10,7 +11,6 @@ import type { AnalysisReport } from "../lib/types";
 import { VERDICT_KIND } from "../lib/verdict";
 
 type Stage = "idle" | "ready" | "scanning" | "done" | "error";
-type Provider = "huggingface" | "hive";
 
 const THEATER_MS = 5600; // minimum drama, even when the API answers instantly
 
@@ -26,7 +26,6 @@ export function Detect() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [report, setReport] = useState<AnalysisReport | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [provider, setProvider] = useState<Provider>("huggingface");
 
   const isImage = file?.type.startsWith("image/") ?? false;
 
@@ -125,41 +124,8 @@ export function Detect() {
         </AnimatePresence>
       </div>
 
-      {/* provider selection */}
-      {(stage === "ready" || stage === "idle") && (
-        <div className="mt-8 text-center">
-          <div className="inline-flex gap-3">
-            <button
-              onClick={() => setProvider("huggingface")}
-              className={`rounded-full border px-5 py-2 text-sm transition-all duration-300 ${
-                provider === "huggingface"
-                  ? "border-real/60 text-real shadow-[0_0_20px_rgba(0,255,136,0.25)]"
-                  : "border-white/10 text-mist hover:border-white/25"
-              }`}
-            >
-              HuggingFace <span className="opacity-60">(free)</span>
-            </button>
-            <button
-              onClick={() => setProvider("hive")}
-              className={`rounded-full border px-5 py-2 text-sm transition-all duration-300 ${
-                provider === "hive"
-                  ? "border-purple-400/60 text-purple-300 shadow-[0_0_20px_rgba(168,85,247,0.3)]"
-                  : "border-white/10 text-mist hover:border-white/25"
-              }`}
-            >
-              Hive Moderation <span className="opacity-60">(paid · 94% accuracy)</span>
-            </button>
-          </div>
-          <p className="mt-3 text-xs text-faint">
-            Pro users can run both simultaneously for a side-by-side comparison
-          </p>
-          {provider === "hive" && (
-            <p className="mt-2 font-mono text-[11px] text-uncertain/80">
-              Hive integration is rolling out — today every scan runs on the Veritas pipeline.
-            </p>
-          )}
-        </div>
-      )}
+      {/* live engine status from the backend */}
+      {(stage === "ready" || stage === "idle") && <EngineStatus />}
 
       {/* analyse / state actions */}
       {stage === "ready" && (
@@ -213,8 +179,8 @@ export function Detect() {
       {/* pro upsell — quiet and warm */}
       <div className="glass mt-20 rounded-3xl p-7 text-center">
         <p className="text-sm leading-relaxed text-mist">
-          Run against two providers at once for higher confidence —{" "}
-          <span className="text-teal-200">upgrade to Pro</span>
+          Multi-engine scans with side-by-side comparison are coming to{" "}
+          <span className="text-teal-200">Pro</span>
         </p>
         <a
           href="/pricing"
