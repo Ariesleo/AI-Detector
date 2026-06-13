@@ -12,6 +12,11 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     claude_vision_model: str = "claude-haiku-4-5-20251001"   # L4: cheap vision triage
     claude_verdict_model: str = "claude-sonnet-4-6"          # L5: reasoning + report
+
+    # Gemini — free-tier alternative engine for L4/L5. Claude wins if both keys set.
+    gemini_api_key: str | None = None
+    gemini_vision_model: str = "gemini-2.5-flash"
+    gemini_verdict_model: str = "gemini-2.5-flash"
     max_image_dimension: int = 1568    # downscale cap before Claude vision (token control)
     max_upload_bytes: int = 15 * 1024 * 1024
 

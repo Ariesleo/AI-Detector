@@ -14,6 +14,19 @@ from app.pipeline import runner
 client = TestClient(app)
 
 
+@pytest.fixture(autouse=True)
+def no_real_services(monkeypatch):
+    """Tests must never spend API credits or touch real Supabase/Upstash,
+    even when developer credentials are present in .env."""
+    from app.config import settings
+    monkeypatch.setattr(settings, "anthropic_api_key", None)
+    monkeypatch.setattr(settings, "gemini_api_key", None)
+    monkeypatch.setattr(settings, "supabase_url", None)
+    monkeypatch.setattr(settings, "supabase_service_key", None)
+    monkeypatch.setattr(settings, "upstash_redis_rest_url", None)
+    monkeypatch.setattr(settings, "upstash_redis_rest_token", None)
+
+
 def make_camera_jpeg() -> bytes:
     """Noisy image with camera EXIF — should lean authentic."""
     rng = np.random.default_rng(42)
@@ -179,7 +192,7 @@ def test_claude_budget_kill_switch(monkeypatch, clean_counters):
 
 
 def test_budget_off_forces_rules_engine():
-    report = runner.analyze(make_sd_png(), "image/png", use_claude=False)
+    report = runner.analyze(make_sd_png(), "image/png", use_llm=False)
     assert report.engine == "rules"
     assert report.verdict in (Verdict.LIKELY_AI, Verdict.CONFIRMED_AI)
 

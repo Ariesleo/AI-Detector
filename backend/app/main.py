@@ -44,6 +44,7 @@ def healthz() -> dict:
     return {
         "ok": True,
         "claude_enabled": bool(settings.anthropic_api_key),
+        "gemini_enabled": bool(settings.gemini_api_key),
         "supabase_enabled": store.supabase_enabled(),
         "upstash_enabled": ratelimit.upstash_enabled(),
     }
@@ -79,12 +80,16 @@ async def analyze(
             detail += " Sign in to raise your limit."
         raise HTTPException(429, detail)
 
-    use_claude = bool(settings.anthropic_api_key) and ratelimit.claude_budget_ok()
-    report = runner.analyze(data, mime=file.content_type, use_claude=use_claude)
-    if use_claude:
+    llm_configured = bool(settings.anthropic_api_key or settings.gemini_api_key)
+    use_llm = llm_configured and ratelimit.claude_budget_ok()
+    report = runner.analyze(data, mime=file.content_type, use_llm=use_llm)
+    if use_llm:
         ratelimit.count_claude_use()
 
-    store.save(report)
+    # Don't cache degraded reports (errored layers, e.g. an LLM outage or
+    # billing failure) — the next attempt should re-analyze, not replay them.
+    if not any(layer.status == "error" for layer in report.layers.values()):
+        store.save(report)
     if user_id:
         store.record_history(user_id, report)
     return report

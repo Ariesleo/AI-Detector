@@ -34,7 +34,7 @@ export interface AnalysisReport {
   summary: string;
   evidence: EvidenceItem[];
   layers: Record<string, LayerResult>;
-  engine: "claude" | "rules";
+  engine: "claude" | "gemini" | "rules";
   cached: boolean;
 }
 

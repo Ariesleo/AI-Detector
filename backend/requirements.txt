@@ -6,6 +6,8 @@ numpy>=1.26
 pydantic>=2.7
 pydantic-settings>=2.3
 anthropic>=0.40
+# Free-tier alternative LLM engine for L4/L5 (GEMINI_API_KEY).
+google-genai>=1.0
 # Persistent cache + auth + history. Degrades to in-memory if env vars absent.
 supabase>=2.0
 # Optional — official Content Authenticity SDK; code targets the 0.32 Reader API.

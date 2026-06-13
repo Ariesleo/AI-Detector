@@ -1,13 +1,17 @@
 """L5 — Verdict aggregation.
 
-Two engines:
+Three engines, in preference order:
 - claude: Sonnet weighs all evidence and writes the verdict via forced tool schema
+- gemini: free-tier alternative, schema-constrained JSON output
 - rules:  deterministic weighted scoring — fallback when no API key, and the
           sanity floor: conclusive provenance signals always override.
 """
 from __future__ import annotations
 
 import json
+from typing import Literal
+
+from pydantic import BaseModel
 
 from ..config import settings
 from ..models import Direction, EvidenceItem, LayerResult, Verdict, Weight
@@ -47,23 +51,37 @@ Rules for your verdict:
 - summary: plain language, cite the specific evidence, note what could NOT be checked."""
 
 
+class _GeminiVerdict(BaseModel):
+    verdict: Literal["verified_authentic", "likely_authentic", "inconclusive",
+                     "likely_ai", "confirmed_ai"]
+    confidence: float
+    summary: str
+
+
 def aggregate(evidence: list[EvidenceItem], layers: dict[str, LayerResult],
-              use_claude: bool = True) -> tuple[Verdict, float, str, str]:
+              use_llm: bool = True) -> tuple[Verdict, float, str, str]:
     """Returns (verdict, confidence, summary, engine).
 
-    use_claude=False forces the rules engine (daily Claude budget kill-switch).
+    use_llm=False forces the rules engine (daily LLM budget kill-switch).
+    Provider preference: Claude, then Gemini, then deterministic rules.
     """
-    # Conclusive provenance short-circuits both engines.
+    # Conclusive provenance short-circuits every engine.
     for e in evidence:
         if e.weight == Weight.CONCLUSIVE and e.direction == Direction.AI:
             return (Verdict.CONFIRMED_AI, 0.98,
                     "Cryptographically signed Content Credentials declare this image AI-generated.", "rules")
 
-    if settings.anthropic_api_key and use_claude:
-        try:
-            return _claude_verdict(evidence, layers)
-        except Exception:
-            pass  # fall through to rules
+    if use_llm:
+        if settings.anthropic_api_key:
+            try:
+                return _claude_verdict(evidence, layers)
+            except Exception:
+                pass  # fall through
+        if settings.gemini_api_key:
+            try:
+                return _gemini_verdict(evidence, layers)
+            except Exception:
+                pass  # fall through to rules
     return _rules_verdict(evidence)
 
 
@@ -87,6 +105,28 @@ def _claude_verdict(evidence: list[EvidenceItem], layers: dict[str, LayerResult]
             payload["summary"], "claude")
 
 
+def _gemini_verdict(evidence: list[EvidenceItem], layers: dict[str, LayerResult]) -> tuple[Verdict, float, str, str]:
+    from google import genai
+    from google.genai import types as gtypes
+
+    notes = {n: f"{l.status}: {l.note}" for n, l in layers.items() if l.status != "ok"} or "none"
+    client = genai.Client(api_key=settings.gemini_api_key)
+    resp = client.models.generate_content(
+        model=settings.gemini_verdict_model,
+        contents=PROMPT.format(
+            evidence=json.dumps([e.model_dump() for e in evidence], indent=1),
+            notes=json.dumps(notes) if isinstance(notes, dict) else notes,
+        ),
+        config=gtypes.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema=_GeminiVerdict,
+        ),
+    )
+    payload = json.loads(resp.text)
+    return (Verdict(payload["verdict"]), max(0.0, min(1.0, float(payload["confidence"]))),
+            payload["summary"], "gemini")
+
+
 def _rules_verdict(evidence: list[EvidenceItem]) -> tuple[Verdict, float, str, str]:
     ai = sum(WEIGHT_SCORES[e.weight] for e in evidence if e.direction == Direction.AI)
     auth = sum(WEIGHT_SCORES[e.weight] for e in evidence if e.direction == Direction.AUTHENTIC)
@@ -107,7 +147,7 @@ def _rules_verdict(evidence: list[EvidenceItem]) -> tuple[Verdict, float, str, s
 
     ai_sig = [e.signal for e in evidence if e.direction == Direction.AI]
     auth_sig = [e.signal for e in evidence if e.direction == Direction.AUTHENTIC]
-    summary = (f"Rule-based verdict (no Claude key configured). "
+    summary = (f"Rule-based verdict (no LLM engine available). "
                f"AI-leaning signals: {', '.join(ai_sig) or 'none'}. "
                f"Authenticity signals: {', '.join(auth_sig) or 'none'}. "
                "Weak forensic hints alone are never treated as proof.")
