@@ -39,6 +39,19 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
+def _resolve_workspace(user_id: str | None, requested_id: str | None) -> dict | None:
+    """Workspace context per docs/TENANCY.md: explicit X-Workspace-Id (must be
+    a member; 403 otherwise) or the user's personal workspace. None = anonymous."""
+    if not user_id or not store.supabase_enabled():
+        return None
+    if requested_id:
+        workspace = store.get_workspace_if_member(user_id, requested_id)
+        if workspace is None:
+            raise HTTPException(403, "You are not a member of this workspace.")
+        return workspace
+    return store.get_personal_workspace(user_id)
+
+
 @app.get("/healthz")
 def healthz() -> dict:
     return {
@@ -55,6 +68,7 @@ async def analyze(
     request: Request,
     file: UploadFile = File(...),
     authorization: str | None = Header(default=None),
+    x_workspace_id: str | None = Header(default=None, alias="X-Workspace-Id"),
 ) -> AnalysisReport:
     if file.content_type not in ALLOWED_MIMES:
         raise HTTPException(415, f"Unsupported type {file.content_type}. Allowed: {sorted(ALLOWED_MIMES)}")
@@ -65,15 +79,16 @@ async def analyze(
         raise HTTPException(400, "Empty upload.")
 
     user_id = auth.resolve_user_id(authorization)
+    workspace = _resolve_workspace(user_id, x_workspace_id)
 
     # Cache hit costs us nothing — serve it before burning quota.
     sha = hashlib.sha256(data).hexdigest()
     if cached := store.get_by_hash(sha):
-        if user_id:
-            store.record_history(user_id, cached)
+        if workspace and user_id:
+            store.record_history(workspace["id"], user_id, cached)
         return cached.model_copy(update={"cached": True})
 
-    allowed, remaining = ratelimit.check_quota(_client_ip(request), user_id)
+    allowed, remaining = ratelimit.check_quota(_client_ip(request), workspace)
     if not allowed:
         detail = "Daily check limit reached."
         if not user_id:
@@ -90,8 +105,9 @@ async def analyze(
     # billing failure) — the next attempt should re-analyze, not replay them.
     if not any(layer.status == "error" for layer in report.layers.values()):
         store.save(report)
-    if user_id:
-        store.record_history(user_id, report)
+    if workspace and user_id:
+        store.record_history(workspace["id"], user_id, report)
+        store.record_usage(workspace["id"], user_id, report.engine, use_llm)
     return report
 
 
@@ -104,11 +120,17 @@ def get_report(report_id: str) -> AnalysisReport:
 
 
 @app.get("/v1/history")
-def get_history(authorization: str | None = Header(default=None)) -> list[dict]:
-    """Authenticated user's past checks, newest first. Requires Supabase."""
+def get_history(
+    authorization: str | None = Header(default=None),
+    x_workspace_id: str | None = Header(default=None, alias="X-Workspace-Id"),
+) -> list[dict]:
+    """The active workspace's past checks, newest first. Requires Supabase."""
     if not store.supabase_enabled():
         raise HTTPException(501, "History requires Supabase (not configured).")
     user_id = auth.resolve_user_id(authorization)
     if not user_id:
         raise HTTPException(401, "Sign in to view history.")
-    return store.get_history(user_id)
+    workspace = _resolve_workspace(user_id, x_workspace_id)
+    if workspace is None:
+        return []
+    return store.get_history(workspace["id"])

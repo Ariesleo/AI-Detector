@@ -100,14 +100,15 @@ def save(report: AnalysisReport) -> None:
         logger.warning("Supabase save failed: %s", exc)
 
 
-def record_history(user_id: str, report: AnalysisReport) -> None:
-    """One row per check an authenticated user runs (cache hits included)."""
+def record_history(workspace_id: str, user_id: str, report: AnalysisReport) -> None:
+    """One row per check run inside a workspace (cache hits included)."""
     sb = _supabase()
     if sb is None:
         return
     try:
         sb.table("history").insert(
             {
+                "workspace_id": workspace_id,
                 "user_id": user_id,
                 "report_id": report.report_id,
                 "sha256": report.sha256,
@@ -119,7 +120,7 @@ def record_history(user_id: str, report: AnalysisReport) -> None:
         logger.warning("Supabase record_history failed: %s", exc)
 
 
-def get_history(user_id: str, limit: int = 50) -> list[dict]:
+def get_history(workspace_id: str, limit: int = 50) -> list[dict]:
     sb = _supabase()
     if sb is None:
         return []
@@ -127,7 +128,7 @@ def get_history(user_id: str, limit: int = 50) -> list[dict]:
         return (
             sb.table("history")
             .select("report_id, sha256, verdict, confidence, created_at")
-            .eq("user_id", user_id)
+            .eq("workspace_id", workspace_id)
             .order("created_at", desc=True)
             .limit(limit)
             .execute()
@@ -136,3 +137,65 @@ def get_history(user_id: str, limit: int = 50) -> list[dict]:
     except Exception as exc:
         logger.warning("Supabase get_history failed: %s", exc)
         return []
+
+
+# ---------- workspaces (docs/TENANCY.md) ----------
+
+def get_personal_workspace(user_id: str) -> dict | None:
+    """The user's default workspace context (created by signup trigger)."""
+    sb = _supabase()
+    if sb is None:
+        return None
+    try:
+        rows = (
+            sb.table("workspaces")
+            .select("id, name, kind, plan, workspace_members!inner(user_id, role)")
+            .eq("workspace_members.user_id", user_id)
+            .execute()
+            .data
+        )
+    except Exception as exc:
+        logger.warning("Supabase get_personal_workspace failed: %s", exc)
+        return None
+    if not rows:
+        return None
+    return next((r for r in rows if r["kind"] == "personal"), rows[0])
+
+
+def get_workspace_if_member(user_id: str, workspace_id: str) -> dict | None:
+    """The workspace, but only if the user belongs to it."""
+    sb = _supabase()
+    if sb is None:
+        return None
+    try:
+        rows = (
+            sb.table("workspaces")
+            .select("id, name, kind, plan, workspace_members!inner(user_id, role)")
+            .eq("id", workspace_id)
+            .eq("workspace_members.user_id", user_id)
+            .limit(1)
+            .execute()
+            .data
+        )
+        return rows[0] if rows else None
+    except Exception as exc:
+        logger.warning("Supabase get_workspace_if_member failed: %s", exc)
+        return None
+
+
+def record_usage(workspace_id: str, user_id: str | None, engine: str, llm_used: bool) -> None:
+    """Metering row per fresh analysis — the billing source of truth later."""
+    sb = _supabase()
+    if sb is None:
+        return
+    try:
+        sb.table("usage_events").insert(
+            {
+                "workspace_id": workspace_id,
+                "user_id": user_id,
+                "engine": engine,
+                "llm_used": llm_used,
+            }
+        ).execute()
+    except Exception as exc:
+        logger.warning("Supabase record_usage failed: %s", exc)

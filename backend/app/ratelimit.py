@@ -79,14 +79,18 @@ def _peek(key: str) -> int:
     return count if time.time() <= expires else 0
 
 
-def check_quota(ip: str, user_id: str | None) -> tuple[bool, int]:
+def check_quota(ip: str, workspace: dict | None) -> tuple[bool, int]:
     """Count this request against the caller's daily quota.
 
-    Returns (allowed, remaining). Authenticated users get the higher cap
-    keyed by user id; anonymous callers are keyed by IP.
+    Returns (allowed, remaining). Signed-in traffic is keyed per WORKSPACE
+    (shared by all its members) with a plan-based cap; anonymous callers
+    are keyed by IP. See docs/TENANCY.md.
     """
-    if user_id:
-        key, limit = f"rl:u:{user_id}:{_today()}", settings.rate_limit_user_daily
+    if workspace:
+        limit = (settings.rate_limit_pro_daily
+                 if workspace.get("plan") == "pro"
+                 else settings.rate_limit_user_daily)
+        key = f"rl:ws:{workspace['id']}:{_today()}"
     else:
         key, limit = f"rl:ip:{ip}:{_today()}", settings.rate_limit_anon_daily
     count = _incr(key)

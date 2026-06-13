@@ -1,6 +1,8 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { authEnabled, supabase } from "../lib/supabase";
+import { useSession } from "../lib/useSession";
 import { CloseIcon, MenuIcon } from "./icons";
 
 const LINKS = [
@@ -29,6 +31,13 @@ function OrbMark() {
 export function NavBar() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { session } = useSession();
+
+  const signOut = async () => {
+    await supabase?.auth.signOut();
+    navigate("/");
+  };
 
   useEffect(() => setOpen(false), [location.pathname]);
   useEffect(() => {
@@ -62,6 +71,32 @@ export function NavBar() {
               {l.label}
             </NavLink>
           ))}
+          {session && (
+            <NavLink
+              to="/history"
+              className={({ isActive }) =>
+                `text-sm tracking-wide transition-colors ${
+                  isActive ? "text-teal-200" : "text-mist hover:text-ink"
+                }`
+              }
+            >
+              History
+            </NavLink>
+          )}
+          {authEnabled &&
+            (session ? (
+              <button
+                onClick={signOut}
+                title={session.user.email ?? undefined}
+                className="text-sm text-faint transition-colors hover:text-mist"
+              >
+                {(session.user.email ?? "account").split("@")[0]} · sign out
+              </button>
+            ) : (
+              <NavLink to="/login" className="text-sm text-mist hover:text-ink">
+                Sign in
+              </NavLink>
+            ))}
           <Link
             to="/detect"
             className="rounded-full border border-teal-300/40 px-4 py-1.5 text-sm font-medium text-teal-200 shadow-[0_0_18px_rgba(45,212,191,0.25)] transition-shadow hover:shadow-[0_0_28px_rgba(45,212,191,0.45)]"
@@ -97,21 +132,40 @@ export function NavBar() {
               </button>
             </div>
             <div className="flex flex-1 flex-col items-center justify-center gap-8">
-              {LINKS.map((l, i) => (
+              {[...LINKS, ...(session ? [{ to: "/history", label: "History" }] : [])].map(
+                (l, i) => (
+                  <motion.div
+                    key={l.to}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 * i }}
+                  >
+                    <NavLink
+                      to={l.to}
+                      className="font-display text-3xl font-medium tracking-wide text-ink"
+                    >
+                      {l.label}
+                    </NavLink>
+                  </motion.div>
+                ),
+              )}
+              {authEnabled && (
                 <motion.div
-                  key={l.to}
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.05 * i }}
+                  transition={{ delay: 0.35 }}
                 >
-                  <NavLink
-                    to={l.to}
-                    className="font-display text-3xl font-medium tracking-wide text-ink"
-                  >
-                    {l.label}
-                  </NavLink>
+                  {session ? (
+                    <button onClick={signOut} className="text-base text-faint">
+                      sign out
+                    </button>
+                  ) : (
+                    <NavLink to="/login" className="text-base text-teal-200">
+                      Sign in
+                    </NavLink>
+                  )}
                 </motion.div>
-              ))}
+              )}
             </div>
             <p className="pb-10 text-center text-xs text-faint">
               Truth still exists. We help you find it.

@@ -30,7 +30,8 @@ class Settings(BaseSettings):
 
     # Abuse / cost controls (ARCHITECTURE.md §5)
     rate_limit_anon_daily: int = 5      # checks/day per IP, no account
-    rate_limit_user_daily: int = 25     # checks/day per authenticated user
+    rate_limit_user_daily: int = 25     # checks/day per free workspace
+    rate_limit_pro_daily: int = 10000   # "unlimited" with an abuse ceiling
     claude_daily_call_budget: int = 1000  # hard kill-switch: analyses/day that may spend Claude tokens
 
     class Config:

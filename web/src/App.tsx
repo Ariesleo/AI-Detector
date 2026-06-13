@@ -8,8 +8,10 @@ import { NavBar } from "./components/NavBar";
 import { Particles } from "./components/Particles";
 import { About } from "./pages/About";
 import { Detect } from "./pages/Detect";
+import { History } from "./pages/History";
 import { Home } from "./pages/Home";
 import { HowItWorks } from "./pages/HowItWorks";
+import { Login } from "./pages/Login";
 import { Pricing } from "./pages/Pricing";
 
 /**
@@ -61,6 +63,8 @@ function AnimatedRoutes() {
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/about" element={<About />} />
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/history" element={<History />} />
               <Route path="*" element={<Home />} />
             </Routes>
             <Footer />
