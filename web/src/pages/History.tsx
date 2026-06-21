@@ -52,7 +52,7 @@ export function History() {
 
       {entries !== null && entries.length === 0 && (
         <Reveal delay={0.1}>
-          <div className="glass mt-10 rounded-3xl p-10 text-center">
+          <div className="glass mt-10 rounded-3xl p-6 text-center sm:p-10">
             <p className="text-mist">No scans yet.</p>
             <GlowLink to="/detect" variant="ghost" className="mt-6">
               Scan your first image

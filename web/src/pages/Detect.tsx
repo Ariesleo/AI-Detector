@@ -136,11 +136,14 @@ export function Detect() {
               pipeline analyzes images. Drop a JPG, PNG, WEBP, TIFF, or HEIC to scan.
             </p>
           )}
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
             <GlowButton onClick={analyse} disabled={!isImage}>
               Analyse
             </GlowButton>
-            <button onClick={reset} className="text-sm text-faint hover:text-mist">
+            <button
+              onClick={reset}
+              className="min-h-11 px-3 py-2 text-sm text-faint hover:text-mist active:text-mist"
+            >
               choose a different file
             </button>
           </div>
@@ -154,11 +157,14 @@ export function Detect() {
           className="glass mx-auto mt-8 max-w-md rounded-3xl p-6 text-center"
         >
           <p className="text-sm leading-relaxed text-fake/90">{error}</p>
-          <div className="mt-4 flex justify-center gap-4">
+          <div className="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
             <GlowButton variant="ghost" onClick={analyse}>
               Try again
             </GlowButton>
-            <button onClick={reset} className="text-sm text-faint hover:text-mist">
+            <button
+              onClick={reset}
+              className="min-h-11 px-3 py-2 text-sm text-faint hover:text-mist active:text-mist"
+            >
               start over
             </button>
           </div>

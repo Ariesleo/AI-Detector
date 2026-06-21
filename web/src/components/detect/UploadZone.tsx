@@ -59,7 +59,7 @@ export function UploadZone({ onFile }: UploadZoneProps) {
           {isDragActive ? "Release to scan" : "Drop any image, audio, video, or document"}
         </p>
         <p className="mt-2 text-sm text-faint">or click to browse</p>
-        <p className="mt-6 font-mono text-[11px] tracking-[0.2em] text-faint">
+        <p className="mt-6 px-4 font-mono text-[11px] tracking-[0.12em] text-faint sm:tracking-[0.2em]">
           JPG&ensp;PNG&ensp;WEBP&ensp;MP3&ensp;WAV&ensp;MP4&ensp;MOV&ensp;PDF&ensp;DOCX
         </p>
       </div>

@@ -10,7 +10,7 @@ export function Footer() {
         </p>
         <div className="mt-8 flex flex-col items-center justify-between gap-4 text-sm text-faint sm:flex-row">
           <span className="font-display tracking-[0.24em]">VERITAS</span>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             <Link to="/detect" className="hover:text-mist">Detect</Link>
             <Link to="/how-it-works" className="hover:text-mist">How it works</Link>
             <Link to="/about" className="hover:text-mist">About</Link>

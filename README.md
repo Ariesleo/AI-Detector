@@ -11,8 +11,8 @@ binary "fake/real" claim.
 | Folder | What it is | Stack |
 |---|---|---|
 | [`backend/`](backend/) | Layered detection pipeline + API (L1 C2PA provenance → L2 metadata → L3 forensics → L4 Claude vision → L5 verdict), Supabase persistence, rate limiting | FastAPI · Python |
-| [`web/`](web/) | Veritas web app — marketing site + detection playground | React · Vite · TypeScript · Tailwind · Framer Motion |
-| [`mobile/`](mobile/) | Cross-platform app (iOS/Android/web), future share-intent entry path | React Native · Expo |
+| [`web/`](web/) | **Primary app** — marketing site + detection playground. Responsive and installable as a PWA (offline shell, add-to-home-screen on iOS/Android). Path to App Store / Play Store is to wrap this build with Capacitor — not a second codebase. | React · Vite · TypeScript · Tailwind · Framer Motion |
+| [`mobile/`](mobile/) | _Parked._ Original React Native + Expo shell, superseded by the responsive web app + PWA. Revisit only if native share-intent becomes a priority Capacitor can't cover. | React Native · Expo |
 
 Docs: [`ARCHITECTURE.md`](ARCHITECTURE.md) (technical design) ·
 [`PRODUCT_SPEC.md`](PRODUCT_SPEC.md) (product/design source of truth)
@@ -31,7 +31,12 @@ uvicorn app.main:app --reload
 cd web
 npm install
 npm run dev            # open http://localhost:5173
+# npm run build && npm run preview   # serves the installable PWA (the service worker is build-only)
 ```
+
+The web app is mobile-responsive and installable to the home screen on phones
+and desktop. iOS/Android store builds, when needed, come from wrapping this same
+build with [Capacitor](https://capacitorjs.com/) — see [`ARCHITECTURE.md`](ARCHITECTURE.md) §3.
 
 Without any credentials the pipeline still works: free forensic layers +
 rule-based verdict. Add `ANTHROPIC_API_KEY` for Claude vision/reasoning,

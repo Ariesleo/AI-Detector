@@ -81,7 +81,7 @@ export function VerdictPanel({ report }: { report: AnalysisReport }) {
         className="mt-8 text-center"
       >
         <span
-          className="inline-block rounded-full border px-5 py-2 font-display text-lg font-semibold tracking-wide"
+          className="inline-block rounded-2xl border px-4 py-2 font-display text-base font-semibold tracking-normal sm:rounded-full sm:px-5 sm:text-lg sm:tracking-wide"
           style={{ color: meta.color, borderColor: `${meta.color}66`, background: `${meta.color}11` }}
         >
           {VERDICT_LABEL[report.verdict]} — {pct}% confidence

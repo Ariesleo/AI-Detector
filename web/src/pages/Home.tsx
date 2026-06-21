@@ -99,7 +99,7 @@ export function Home() {
           </p>
         </Reveal>
         <Reveal delay={0.25}>
-          <h1 className="mt-5 font-display text-5xl font-semibold tracking-wide text-ink sm:text-7xl">
+          <h1 className="mt-5 font-display text-4xl font-semibold tracking-wide text-ink sm:text-6xl lg:text-7xl">
             Find what is real.
           </h1>
         </Reveal>

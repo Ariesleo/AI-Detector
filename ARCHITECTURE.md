@@ -15,7 +15,7 @@ Verdict scale: `Verified authentic` (signed provenance) → `Likely authentic` �
 ## 2. Pipeline
 
 ```
-Client (Expo app / web)
+Client (web app / installable PWA)
   └─ upload image ──► API Gateway (serverless)
         ├─ SHA-256 hash ──► cache hit? return cached report
         ├─ [parallel]
@@ -41,8 +41,8 @@ Reverse image search (catching real-but-miscaptioned photos — the most common 
 
 | Layer | Choice | Why |
 |---|---|---|
-| Client | React Native + **Expo** (expo-router, EAS Build) | One codebase → iOS, Android, web. OTA updates. Free tier. |
-| Share intent | expo-share-intent | "Share to app" from WhatsApp/Twitter — the killer UX for this product |
+| Client | **React + Vite + Tailwind** (web), installable as a PWA | Web-first: one responsive codebase ships to every browser and installs to the home screen on iOS/Android. App Store / Play Store builds, when needed, come from wrapping this same build with **Capacitor** — not a second codebase. (Supersedes the original Expo plan; see `mobile/`, now parked.) |
+| Share intent | Capacitor share-target plugin (deferred) | "Share to app" from WhatsApp/Twitter — the killer UX; lands with the Capacitor wrapper, not before. |
 | API | **Python on AWS Lambda** (or Railway/Fly free tier) via FastAPI + Mangum | Forensics needs Pillow/NumPy/OpenCV — Python-native. Scales to zero. |
 | Provenance | `c2pa-python` / `c2pa-node` | Official CAI SDK, free |
 | Metadata | `pyexiftool` / `piexif` | Industry standard |
@@ -88,7 +88,7 @@ L5 Claude call uses **structured outputs / tool-use schema** so the verdict JSON
 
 | Phase | Scope |
 |---|---|
-| 1 | Images: pipeline above, web first via Expo, then app-store builds |
+| 1 | Images: pipeline above, responsive web + installable PWA, then Capacitor app-store builds |
 | 2 | Audio files: metadata + spectrogram analysis + Claude reasoning (weaker without detector APIs — set expectations) |
 | 3 | Video: keyframe extraction → reuse image pipeline per frame |
 | 4 | Live calls: **not feasible** without specialized vendors (Pindrop-class); revisit only with budget |
@@ -98,5 +98,5 @@ L5 Claude call uses **structured outputs / tool-use schema** so the verdict JSON
 1. FastAPI service with L1–L3 (no Claude yet) — pure free forensics, testable locally.
 2. Add Claude L4 vision + L5 structured verdict; calibrate weights on a test set (Midjourney/SDXL/Flux samples vs. real photos).
 3. Supabase cache + rate limiting.
-4. Expo app: upload, share-intent, simple/detailed report views.
-5. Deploy: Lambda + EAS builds; TestFlight/Play internal track.
+4. Web app: upload, simple/detailed report views; make it responsive + installable (PWA).
+5. Deploy: Lambda (API) + static web host. Wrap the web build with Capacitor for TestFlight/Play internal track when store presence is needed.

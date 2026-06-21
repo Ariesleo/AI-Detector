@@ -111,7 +111,9 @@ export function Orb({ size = 320, mini = false, className }: OrbProps) {
       ref={ref}
       aria-hidden
       className={className}
-      style={{ width: size, height: size }}
+      // Render at `size` but never wider than the viewport/container; aspect-ratio
+      // keeps it square as it shrinks on narrow phones. Caps overflow at ≤320px.
+      style={{ width: size, height: "auto", maxWidth: "100%", aspectRatio: "1 / 1" }}
     />
   );
 }

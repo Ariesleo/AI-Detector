@@ -164,7 +164,7 @@ export function NavBar() {
         </div>
 
         <button
-          className="text-ink md:hidden"
+          className="-mr-2 flex h-10 w-10 items-center justify-center text-ink md:hidden"
           onClick={() => setOpen(true)}
           aria-label="Open menu"
         >
@@ -185,7 +185,11 @@ export function NavBar() {
               <span className="font-display text-lg font-semibold tracking-[0.34em]">
                 VERITAS
               </span>
-              <button onClick={() => setOpen(false)} aria-label="Close menu">
+              <button
+                onClick={() => setOpen(false)}
+                aria-label="Close menu"
+                className="-mr-2 flex h-10 w-10 items-center justify-center"
+              >
                 <CloseIcon size={26} />
               </button>
             </div>

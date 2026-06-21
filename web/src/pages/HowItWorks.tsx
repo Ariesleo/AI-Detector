@@ -8,7 +8,7 @@ import { Reveal } from "../components/Reveal";
 
 function ImageDiagram() {
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {/* real photo: organic gradient */}
       <div className="relative h-44 overflow-hidden rounded-2xl border border-white/10">
         <div
@@ -49,7 +49,7 @@ function VoiceDiagram() {
   const human = "M0 30 Q 8 8 16 26 T 32 22 Q 38 44 46 28 T 62 34 Q 70 12 78 30 T 94 26 Q 100 38 108 28 T 124 32 Q 132 16 140 30";
   const clone = "M0 30 Q 10 14 20 30 T 40 30 Q 50 14 60 30 T 80 30 Q 90 14 100 30 T 120 30 Q 130 14 140 30";
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div className="relative rounded-2xl border border-white/10 p-4">
         <svg viewBox="0 0 140 60" className="w-full">
           <path d={human} fill="none" stroke="rgba(0,255,136,0.7)" strokeWidth="1.5" />
@@ -74,11 +74,11 @@ function VoiceDiagram() {
 
 function VideoDiagram() {
   return (
-    <div className="flex items-center justify-center gap-2">
+    <div className="flex items-center justify-center gap-1.5 sm:gap-2">
       {[0, 1, 2, 3, 4].map((i) => (
         <motion.div
           key={i}
-          className={`h-20 w-14 rounded-lg border sm:w-20 ${
+          className={`h-16 w-10 rounded-lg border sm:h-20 sm:w-20 ${
             i === 2 ? "border-uncertain/70" : "border-white/15"
           }`}
           style={{
@@ -187,7 +187,7 @@ export function HowItWorks() {
         </Reveal>
       </div>
 
-      <div className="mt-20 space-y-24">
+      <div className="mt-12 space-y-16 sm:mt-20 sm:space-y-24">
         {SECTIONS.map((s) => (
           <section key={s.id} id={s.id} className="scroll-mt-28">
             <Reveal>
@@ -212,7 +212,7 @@ export function HowItWorks() {
         ))}
       </div>
 
-      <div className="mt-28 text-center">
+      <div className="mt-16 text-center sm:mt-28">
         <Reveal>
           <p className="text-lg text-mist">
             You don&apos;t need to know any of this to use it.

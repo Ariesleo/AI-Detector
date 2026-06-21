@@ -59,7 +59,7 @@ export function Login() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="glass rounded-3xl p-8"
+        className="glass rounded-3xl p-6 sm:p-8"
       >
         <h1 className="text-center font-display text-2xl font-semibold tracking-wide text-ink">
           {mode === "signin" ? "Welcome back" : "Create your account"}

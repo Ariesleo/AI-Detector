@@ -39,7 +39,7 @@ export function Pricing() {
       <div className="mt-14 grid gap-6 md:grid-cols-2">
         {/* Free */}
         <Reveal>
-          <div className="glass flex h-full flex-col rounded-3xl p-8">
+          <div className="glass flex h-full flex-col rounded-3xl p-6 sm:p-8">
             <h2 className="font-display text-xl font-semibold text-ink">Free</h2>
             <p className="mt-1 font-display text-4xl font-semibold text-ink">
               $0
@@ -62,7 +62,7 @@ export function Pricing() {
         {/* Pro */}
         <Reveal delay={0.15}>
           <div
-            className="glass relative flex h-full flex-col rounded-3xl p-8"
+            className="glass relative flex h-full flex-col rounded-3xl p-6 sm:p-8"
             style={{
               borderColor: "rgba(168, 130, 255, 0.35)",
               boxShadow: "0 0 44px rgba(120, 90, 220, 0.18), inset 0 0 60px rgba(45,212,191,0.04)",

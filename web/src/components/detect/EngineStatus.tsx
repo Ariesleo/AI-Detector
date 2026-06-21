@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { fetchHealth, type Health } from "../../lib/api";
 
 /**
@@ -38,9 +38,9 @@ export function EngineStatus() {
       <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-faint">
         detection engines
       </p>
-      <div className="mt-3 inline-flex items-center gap-2">
+      <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
         {engines.map((e, i) => (
-          <span key={e.label} className="inline-flex items-center gap-2">
+          <Fragment key={e.label}>
             {i > 0 && <span className="text-faint">→</span>}
             <span
               title={e.on ? "active" : "not configured"}
@@ -58,7 +58,7 @@ export function EngineStatus() {
               {e.label}
               {e.note && <span className="ml-1.5 opacity-50">· {e.note}</span>}
             </span>
-          </span>
+          </Fragment>
         ))}
       </div>
       <p className="mt-3 text-xs text-faint">
